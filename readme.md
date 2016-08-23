@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/the-control-group/scopeutils.svg?branch=master)](https://travis-ci.org/the-control-group/scopeutils)
+
 This is a small collection of utility functions for creating, manipulating, and verifying (AuthX)[https://github.com/the-control-group/authx] scopes. These scopes are human-readable, pattern-matching, combinable, and fully OAuth2-compatible. Please see (the AuthX repo)[https://github.com/the-control-group/authx] for more details.
 
 
