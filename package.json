@@ -5,7 +5,6 @@
   "main": "dist/index.js",
   "repository": "https://github.com/the-control-group/scopeutils",
   "scripts": {
-    "bootstrap": "node bin/bootstrap.js",
     "build": "gulp",
     "lint": "eslint src",
     "start": "node server.js",
