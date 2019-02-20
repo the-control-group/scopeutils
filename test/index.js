@@ -165,6 +165,9 @@ describe('scopes', () => {
 			{args: ['*.y:*:c', 'x.*:b:*'], product: 'x.y:b:c'},
 			{args: ['*:**:c', '**:*:c'], product: '*:*:c'},
 
+			// FIXME: https://github.com/the-control-group/scopeutils/issues/1
+			// {args: ['*.*.c:y:z', 'a.**:y:z'], product: 'a.*.c:y:z'},
+
 			// mismatch
 			{args: ['x:b:c', 'a:b:c'], product: null},
 			{args: ['x:*:c', 'a:b:c'], product: null},
