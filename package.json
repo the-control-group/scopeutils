@@ -1,32 +1,69 @@
 {
   "name": "scopeutils",
-  "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.js",
-  "repository": "https://github.com/the-control-group/scopeutils",
-  "scripts": {
-    "build": "gulp",
-    "lint": "eslint src",
-    "start": "node server.js",
-    "test": "node_modules/mocha/bin/mocha --compilers js:babel-register"
-  },
-  "author": "",
+  "version": "1.1.0",
+  "description": "Simple permission scopes and patterns with support for algebraic operations.",
   "license": "MIT",
-  "dependencies": {},
+  "author": {
+    "name": "Mike Marcacci",
+    "email": "mike.marcacci@thecontrolgroup.com"
+  },
+  "repository": "https://github.com/the-control-group/scopeutils#readme",
+  "bugs": "https://github.com/the-control-group/scopeutils/issues",
+  "keywords": [
+    "scopes",
+    "permissions",
+    "acl",
+    "glob",
+    "pattern"
+  ],
+  "files": [
+    "lib",
+    "!lib/test.*"
+  ],
+  "main": "lib",
+  "module": "lib/index.mjs",
+  "engines": {
+    "node": ">=8.5"
+  },
   "devDependencies": {
-    "babel-core": "^6.2.1",
-    "babel-eslint": "^4.1.6",
-    "babel-plugin-transform-es2015-arrow-functions": "^6.1.18",
-    "babel-plugin-transform-es2015-destructuring": "^6.1.18",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.2.0",
-    "babel-plugin-transform-es2015-spread": "^6.1.18",
-    "babel-plugin-transform-regenerator": "^6.2.0",
-    "babel-plugin-transform-strict-mode": "^6.2.0",
-    "babel-register": "^6.3.2",
-    "chai": "^3.3.0",
-    "eslint": "^1.10.3",
-    "gulp": "^3.9.0",
-    "gulp-babel": "^6.1.1",
-    "mocha": "^2.3.3"
+    "@babel/cli": "^7.1.2",
+    "@babel/core": "^7.3.3",
+    "@babel/preset-env": "^7.3.1",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.14.1",
+    "eslint-config-env": "^3.0.0",
+    "eslint-config-prettier": "^4.0.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-import-order-alphabetical": "^0.0.1",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-prettier": "^3.0.0",
+    "husky": "^1.1.2",
+    "leaked-handles": "^5.2.0",
+    "lint-staged": "^8.1.4",
+    "prettier": "^1.16.4",
+    "tap": "^12.5.3"
+  },
+  "scripts": {
+    "prepare": "npm run prepare:clean && npm run prepare:mjs && npm run prepare:js && npm run prepare:prettier",
+    "prepare:clean": "rm -rf lib",
+    "prepare:mjs": "BABEL_ESM=1 babel src -d lib --keep-file-extension",
+    "prepare:js": "babel src -d lib",
+    "prepare:prettier": "prettier 'lib/**/*.{mjs,js}' --write",
+    "test": "npm run test:eslint && npm run test:prettier && npm run test:mjs && npm run test:js",
+    "test:eslint": "eslint . --ext mjs,js",
+    "test:prettier": "prettier '**/*.{json,yml,md}' -l",
+    "test:mjs": "node --experimental-modules --no-warnings lib/test | tap-mocha-reporter spec",
+    "test:js": "node lib/test | tap-mocha-reporter spec",
+    "prepublishOnly": "npm run prepare && npm test",
+    "watch": "watch 'npm run prepublishOnly --silent' src --interval 1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{mjs,js}": "eslint",
+    "*.{json,yml,md}": "prettier -l"
   }
 }

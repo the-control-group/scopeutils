@@ -2,9 +2,8 @@
 
 This is a small collection of utility functions for creating, manipulating, and verifying (AuthX)[https://github.com/the-control-group/authx] scopes. These scopes are human-readable, pattern-matching, combinable, and fully OAuth2-compatible. Please see (the AuthX repo)[https://github.com/the-control-group/authx] for more details.
 
+## Anatomy of a scope
 
-Anatomy of a scope
-------------------
 Scopes are composed of 3 domains, separated by the `:` character:
 
 ```
@@ -23,45 +22,41 @@ role.*
 **
 ```
 
-Usage
------
+## Usage
 
 Install with `npm install --save scopeutils`
 
 ```js
 import {
-	validate,
-	normalize,
-	can,
-	combine,
-	combineCollections,
-	simplifyCollection
-} from 'scopeutils';
+  validate,
+  normalize,
+  can,
+  combine,
+  combineCollections,
+  simplifyCollection
+} from "scopeutils";
 
-
-validate('realm:resource.identifier:action');
+validate("realm:resource.identifier:action");
 // => true
 
-
-normalize('realm:**.**:action');
+normalize("realm:**.**:action");
 // => 'realm:**:action'
 
-
 // strict mode enabled (default)
-can('realm:**:action', 'realm:resource.identifier:action', true);
+can("realm:**:action", "realm:resource.identifier:action", true);
 // => true
 
 // strict mode disabled
-can('realm:resource.*:action', 'realm:resource.**:action', false);
+can("realm:resource.*:action", "realm:resource.**:action", false);
 // => true
 
-combine('realm:resource.*:action', 'realm:**:action')
+combine("realm:resource.*:action", "realm:**:action");
 // => 'realm:resource.*:action'
 
-combineCollections(['realm:resource.*:action'], ['realm:**:action'])
+combineCollections(["realm:resource.*:action"], ["realm:**:action"]);
 // => ['realm:resource.*:action']
 
-simplifyCollection(['realm:resource.*:action', 'realm:**:action'])
+simplifyCollection(["realm:resource.*:action", "realm:**:action"]);
 // => ['realm:**:action']
 ```
 
