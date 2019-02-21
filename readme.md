@@ -2,7 +2,7 @@
 
 # Scope Utils
 
-This is a small collection of utility functions for creating, manipulating, and verifying (AuthX)[https://github.com/the-control-group/authx] scopes. These scopes are human-readable, pattern-matching, combinable, and fully OAuth2-compatible. Please see (the AuthX repo)[https://github.com/the-control-group/authx] for more details.
+This is a small collection of utility functions for creating, manipulating, and verifying [AuthX](https://github.com/the-control-group/authx) scopes. These scopes are human-readable, pattern-matching, combinable, and fully OAuth2-compatible. Please see [the AuthX repo](https://github.com/the-control-group/authx) for more details.
 
 ## Anatomy of a scope
 
@@ -32,7 +32,7 @@ Install with `npm install --save scopeutils`
 
 **_Please see [the tests](src/test.mjs) for complete examples._**
 
-#### validate(scope: string) -> boolean
+#### validate(scope: string): boolean
 
 Validate that a scope is correctly formatted.
 
@@ -42,7 +42,7 @@ validate("realm:resource.identifier:action");
 // => true
 ```
 
-#### normalize(scope: string) -> string
+#### normalize(scope: string): string
 
 Normalize a scope into its simplest representation.
 
@@ -71,7 +71,7 @@ can("realm:resource.*:action", "realm:resource.**:action", false);
 // => true
 ```
 
-#### combine(a: string, b: string) -> null | string
+#### combine(a: string, b: string): null | string
 
 Find the intersection (the most permissive common scope) of scopes `a` and `b`.
 
@@ -81,7 +81,7 @@ combine("realm:resource.*:action", "realm:**:action");
 // => 'realm:resource.*:action'
 ```
 
-#### combineCollections(collectionA: Array<string>, collectionB: Array<string>) -> Array<string>
+#### combineCollections(collectionA: Array<string>, collectionB: Array<string>): Array<string>
 
 Find all the intersections between the scopes in `collectionA` and the scopes in `collectionB`.
 
@@ -91,7 +91,7 @@ combineCollections(["realm:resource.*:action"], ["realm:**:action"]);
 // => ['realm:resource.*:action']
 ```
 
-### simplifyCollection(collection: Array<string>) -> Array<string>
+### simplifyCollection(collection: Array<string>): Array<string>
 
 Get an array of the most permissive scopes in `collection`, omiting any scopes that are a subset of another scope in the collection.
 
