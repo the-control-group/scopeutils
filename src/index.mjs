@@ -119,17 +119,17 @@ export function combine(a, b) {
   return null;
 }
 
-export function simplify(winners, candidate) {
+function simplify(winners, candidate) {
   if (can(winners, candidate)) return winners;
   return winners.concat(candidate);
 }
 
-// returns a de-duplified array of scope rules
+// returns a de-duplicated array of scope rules
 export function simplifyCollection(collection) {
   return collection.reduce(simplify, []).reduceRight(simplify, []);
 }
 
-// calculates the product of scope rules or returns null
+// calculates the intersection of scope rules or returns null
 export function combineCollections(collectionA, collectionB) {
   return simplifyCollection(
     [].concat(
