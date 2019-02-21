@@ -23,7 +23,7 @@
   "main": "lib",
   "module": "lib/index.mjs",
   "engines": {
-    "node": ">=4"
+    "node": ">=6"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.2",

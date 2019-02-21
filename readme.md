@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/the-control-group/scopeutils.svg?branch=master)](https://travis-ci.org/the-control-group/scopeutils) [![Current version](https://badgen.net/npm/v/fs-capacitor)](https://www.npmjs.com/package/scopeutils) [![Supported Node.js versions](https://badgen.net/npm/node/fs-capacitor)](https://github.com/nodejs/Release)
 
-#Scope Utils
+# Scope Utils
 
 This is a small collection of utility functions for creating, manipulating, and verifying (AuthX)[https://github.com/the-control-group/authx] scopes. These scopes are human-readable, pattern-matching, combinable, and fully OAuth2-compatible. Please see (the AuthX repo)[https://github.com/the-control-group/authx] for more details.
 
@@ -24,9 +24,13 @@ role.*
 **
 ```
 
-## Usage
+## Installation
 
 Install with `npm install --save scopeutils`
+
+## Usage
+
+**_Please see [the tests](src/test.mjs) for complete examples._**
 
 #### validate(scope: string) -> boolean
 
@@ -96,5 +100,3 @@ import { simplifyCollection } from "scopeutils";
 simplifyCollection(["realm:resource.*:action", "realm:**:action"]);
 // => ['realm:**:action']
 ```
-
-**_Please see the tests for complete examples._**
