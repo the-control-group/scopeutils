@@ -1,6 +1,4 @@
-"use strict";
-
-function makeRegExp(scope) {
+function makeRegExp(scope: string): RegExp {
   var pattern = scope
     .split(":")
     .map(domain =>
@@ -18,13 +16,13 @@ function makeRegExp(scope) {
   return new RegExp("^" + pattern + "$");
 }
 
-export function validate(scope) {
+export function validate(scope: string): boolean {
   return /^(([a-zA-Z0-9_-]+|(\*(?!\*\*))+)\.)*([a-zA-Z0-9_-]+|(\*(?!\*\*))+):(([a-zA-Z0-9_-]+|(\*(?!\*\*))+)\.)*([a-zA-Z0-9_-]+|(\*(?!\*\*))+):(([a-zA-Z0-9_-]+|(\*(?!\*\*))+)\.)*([a-zA-Z0-9_-]+|(\*(?!\*\*))+)$/.test(
     scope
   );
 }
 
-export function normalize(scope) {
+export function normalize(scope: string): string {
   return scope
     .split(":")
     .map(domain =>
@@ -42,24 +40,24 @@ export function normalize(scope) {
 }
 
 // combines scopes `a` and `b`, returning the most permissive common scope or `null`
-export function combine(a, b) {
+export function combine(a: string, b: string): null | string {
   a = normalize(a);
   b = normalize(b);
 
   // literal equal
   if (a == b) return a;
 
-  var aX = makeRegExp(a);
-  var bX = makeRegExp(b);
+  const aX = makeRegExp(a);
+  const bX = makeRegExp(b);
 
-  var a_b = aX.test(b);
-  var b_a = bX.test(a);
+  const aB = aX.test(b);
+  const bA = bX.test(a);
 
   // a supercedes b
-  if (b_a && !a_b) return a;
+  if (bA && !aB) return a;
 
   // b supercedes a
-  if (a_b && !b_a) return b;
+  if (aB && !bA) return b;
 
   // ...the scopes are thus mutually exclusive (because they cannot be mutually inclusive without being equal)
 
@@ -69,9 +67,9 @@ export function combine(a, b) {
   // ...substitute the wildcard matches from A into the the wildcards of B
 
   // loop through each domain
-  var substitution = [];
-  var wildcardMap = [];
-  var pattern =
+  const substitution: string[][] = [];
+  const wildcardMap: { w: string; d: number; p: number }[] = [];
+  const pattern =
     "^" +
     a
       .split(":")
@@ -99,7 +97,7 @@ export function combine(a, b) {
       .join(":") +
     "$";
 
-  var matches = b.match(pattern);
+  const matches = b.match(pattern);
 
   // substitution failed, the scopes are incompatible
   if (!matches) return null;
@@ -119,32 +117,48 @@ export function combine(a, b) {
   return null;
 }
 
-function simplify(winners, candidate) {
+// according to the supplied rule, can the given subject be performed?
+export function can(
+  rule: string | string[],
+  subject: string,
+  strict: boolean = true
+): boolean {
+  if (Array.isArray(rule)) return rule.some(r => can(r, subject, strict));
+
+  return strict ? makeRegExp(rule).test(subject) : !!combine(rule, subject);
+}
+
+function simplify(winners: string[], candidate: string): string[] {
   if (can(winners, candidate)) return winners;
   return winners.concat(candidate);
 }
 
 // returns a de-duplicated array of scope rules
-export function simplifyCollection(collection) {
+export function simplifyCollection(collection: string[]): string[] {
   return collection.reduce(simplify, []).reduceRight(simplify, []);
 }
 
 // calculates the intersection of scope rules or returns null
-export function combineCollections(collectionA, collectionB) {
+export function combineCollections(
+  collectionA: string[],
+  collectionB: string[]
+): string[] {
   return simplifyCollection(
-    [].concat(
+    // This is the desired logic, rewritten to support older versions of JS
+    // collectionA
+    //   .flatMap(a => collectionB.flatMap(b => combine(a, b)))
+    //   .filter((x => typeof x == "string") as (x: null | string) => x is string)
+
+    ([] as string[]).concat(
       ...collectionA.map(a =>
-        [].concat(collectionB.map(b => combine(a, b)).filter(x => x))
+        ([] as string[]).concat(
+          collectionB
+            .map(b => combine(a, b))
+            .filter((x => typeof x == "string") as (
+              x: null | string
+            ) => x is string)
+        )
       )
     )
   );
-}
-
-// according to the supplied rule, can the given subject be performed?
-export function can(rule, subject, strict) {
-  strict = strict !== false;
-
-  if (Array.isArray(rule)) return rule.some(r => can(r, subject, strict));
-
-  return strict ? makeRegExp(rule).test(subject) : !!combine(rule, subject);
 }

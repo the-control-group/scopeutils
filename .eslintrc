@@ -1,6 +1,12 @@
 {
-  "extends": ["env"],
-  "rules": {
-    "require-jsdoc": "off"
-  }
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "prettier",
+    "prettier/@typescript-eslint"
+  ],
+  "plugins": [
+    "@typescript-eslint",
+    "prettier"
+  ]
 }
