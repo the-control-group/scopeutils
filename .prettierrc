@@ -1,4 +1,8 @@
 {
-  "parser": "typescript",
-  "proseWrap": "never"
+  "overrides": [
+    {
+      "files": ".ts",
+      "options": { "parser": "typescript" }
+    }
+  ]
 }

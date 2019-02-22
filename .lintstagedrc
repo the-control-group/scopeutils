@@ -1,3 +1,0 @@
-{
-  "*.{ts,json,yml,md}": "prettier -l"
-}

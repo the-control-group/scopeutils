@@ -33,14 +33,13 @@
     "eslint-config-prettier": "^4.0.0",
     "eslint-plugin-prettier": "^3.0.0",
     "husky": "^1.1.2",
-    "lint-staged": "^8.1.4",
     "prettier": "^1.16.4"
   },
   "scripts": {
     "prepare": "rm -rf lib && npx tsc",
     "test": "npm run prepare && ava --verbose lib/test.js",
-    "lint": "eslint src --ext ts",
-    "format": "prettier '**/*.{json,yml,md,ts}' -l",
+    "lint": "prettier -c '**/*.{json,yml,md,ts}' && eslint src --ext ts",
+    "format": "prettier --list-different --write '**/*.{json,yml,md,ts}'",
     "watch": "rm -rf lib && npx tsc --watch"
   }
 }
