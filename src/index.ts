@@ -123,10 +123,40 @@ export function can(
   subject: string,
   strict: boolean = true
 ): boolean {
-  if (Array.isArray(rule)) return rule.some(r => can(r, subject, strict));
+  if (Array.isArray(rule)) {
+    return rule.some(r => can(r, subject, strict));
+  }
 
-  return strict ? makeRegExp(rule).test(subject) : !!combine(rule, subject);
+  // if (strict) {
+  //   const [aRealm, aSubject, aAction] = rule.split(":");
+  //   const [bRealm, bSubject, bAction] = subject.split(":");
+  //   return (
+  //     supersetOfOrEqualTo(aRealm, bRealm) &&
+  //     supersetOfOrEqualTo(aSubject, bSubject) &&
+  //     supersetOfOrEqualTo(aAction, bAction)
+  //   );
+  // }
+
+  return !!combine(rule, subject);
 }
+
+type Pattern = string[];
+
+// export function ⊃(a: Pattern, b: Pattern) {
+//   return superset(a, b);
+// }
+// export function ⊂(a: Pattern, b: Pattern) {
+//   return superset(b, a);
+// }
+// export function ∩(a: Pattern, b: Pattern) {
+//   return intersection(a, b);
+// }
+// export function ∪(a: Pattern, b: Pattern) {
+//   return union(a, b);
+// }
+// export function ∁(a: Pattern, b: Pattern) {
+//   return compliment(a, b);
+// }
 
 function simplify(winners: string[], candidate: string): string[] {
   if (can(winners, candidate)) return winners;

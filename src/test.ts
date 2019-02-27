@@ -294,6 +294,7 @@ test("can (loose) - should match an array of scope rules", t => {
 
   // FIXME: https://github.com/the-control-group/scopeutils/issues/1
   // {args: ['*.*.c:y:z', 'a.**:y:z'], results: 'a.*.c:y:z'},
+  { args: ["a.**:x:x", "**.b:x:x"], results: "a.**.b:x:x" },
 
   // mismatch
   { args: ["x:b:c", "a:b:c"], results: null },
