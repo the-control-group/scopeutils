@@ -12,7 +12,7 @@ export function normalize(pattern: string[]): string[] {
   });
 }
 
-export function simplify(patterns: string[][]) {
+export function simplify(patterns: string[][]): string[][] {
   const set = new Set();
   return patterns.filter(pattern => {
     const key = pattern.join(".");
