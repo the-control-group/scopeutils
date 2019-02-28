@@ -1,25 +1,48 @@
-function makeRegExp(scope: string): RegExp {
-  var pattern = scope
-    .split(":")
-    .map(domain =>
-      domain
-        .split(".")
-        .map(part => {
-          if (part === "**") return "([^:]*)";
-          if (part === "*") return "(\\*|[^\\.^:^*]*)";
-          return part.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
-        })
-        .join("\\.")
-    )
-    .join(":");
+/*
 
-  return new RegExp("^" + pattern + "$");
+import {
+  Pattern,
+  AnyMultiple,
+  AnySingle,
+  intersect,
+  isEqual,
+  isSuperset
+} from "./pattern";
+
+export function parse(scope: string): Pattern[] {
+  return scope.split(
+    ":".map(pattern =>
+      pattern.split(".").map(segment => {
+        switch (segment) {
+          case "**":
+            return AnyMultiple;
+          case "*":
+            return AnySingle;
+          default:
+            return segment;
+        }
+      })
+    )
+  );
 }
 
-export function validate(scope: string): boolean {
-  return /^(([a-zA-Z0-9_-]+|(\*(?!\*\*))+)\.)*([a-zA-Z0-9_-]+|(\*(?!\*\*))+):(([a-zA-Z0-9_-]+|(\*(?!\*\*))+)\.)*([a-zA-Z0-9_-]+|(\*(?!\*\*))+):(([a-zA-Z0-9_-]+|(\*(?!\*\*))+)\.)*([a-zA-Z0-9_-]+|(\*(?!\*\*))+)$/.test(
-    scope
-  );
+export function stringify(scope: Pattern[]): string {
+  return scope
+    .map(pattern =>
+      pattern
+        .map(segment => {
+          switch (segment) {
+            case AnyMultiple:
+              return "**";
+            case AnySingle:
+              return "*";
+            default:
+              return segment;
+          }
+        })
+        .join(".")
+    )
+    .join(":");
 }
 
 export function normalize(scope: string): string {
@@ -39,82 +62,16 @@ export function normalize(scope: string): string {
     .join(":");
 }
 
-// combines scopes `a` and `b`, returning the most permissive common scope or `null`
-export function combine(a: string, b: string): null | string {
-  a = normalize(a);
-  b = normalize(b);
-
-  // literal equal
-  if (a == b) return a;
-
-  const aX = makeRegExp(a);
-  const bX = makeRegExp(b);
-
-  const aB = aX.test(b);
-  const bA = bX.test(a);
-
-  // a supercedes b
-  if (bA && !aB) return a;
-
-  // b supercedes a
-  if (aB && !bA) return b;
-
-  // ...the scopes are thus mutually exclusive (because they cannot be mutually inclusive without being equal)
-
-  // if there are no wildcard sequences, then there is no possibility of a combination
-  if (!a.includes("*") || !b.includes("*")) return null;
-
-  // ...substitute the wildcard matches from A into the the wildcards of B
-
-  // loop through each domain
-  const substitution: string[][] = [];
-  const wildcardMap: { w: string; d: number; p: number }[] = [];
-  const pattern =
-    "^" +
-    a
-      .split(":")
-      .map((domain, d) =>
-        domain
-          .split(".")
-          .map((part, p) => {
-            substitution[d] = substitution[d] || [];
-            substitution[d][p] = part;
-
-            if (part === "**") {
-              wildcardMap.push({ w: "**", d, p });
-              return "([^:]*)";
-            }
-
-            if (part === "*") {
-              wildcardMap.push({ w: "*", d, p });
-              return "([^\\.^:]*)";
-            }
-
-            return "[^:^.]*";
-          })
-          .join("\\.")
+export function validate(scope: string): boolean {
+  const patterns = scope.split(":");
+  return (
+    patterns.length === 3 &&
+    patterns.map(pattern =>
+      /^(([a-zA-Z0-9_-]+|(\*(?!\*\*))+)\.)*([a-zA-Z0-9_-]+|(\*(?!\*\*))+)$/.test(
+        pattern
       )
-      .join(":") +
-    "$";
-
-  const matches = b.match(pattern);
-
-  // substitution failed, the scopes are incompatible
-  if (!matches) return null;
-
-  // make the substitutions, downgrade captured double wildcards
-  wildcardMap.forEach((map, i) => {
-    substitution[map.d][map.p] =
-      map.w === "*" && matches[i + 1] === "**" ? "*" : matches[i + 1];
-  });
-
-  // the combined result
-  var combined = substitution.map(d => d.join(".")).join(":");
-
-  // test the substitution
-  if (bX.test(combined)) return combined;
-
-  return null;
+    )
+  );
 }
 
 // according to the supplied rule, can the given subject be performed?
@@ -127,36 +84,15 @@ export function can(
     return rule.some(r => can(r, subject, strict));
   }
 
-  // if (strict) {
-  //   const [aRealm, aSubject, aAction] = rule.split(":");
-  //   const [bRealm, bSubject, bAction] = subject.split(":");
-  //   return (
-  //     supersetOfOrEqualTo(aRealm, bRealm) &&
-  //     supersetOfOrEqualTo(aSubject, bSubject) &&
-  //     supersetOfOrEqualTo(aAction, bAction)
-  //   );
-  // }
+  const a = parse(rule);
+  const b = parse(subject);
 
-  return !!combine(rule, subject);
+  if (strict) {
+    return isSuperset(a, b);
+  }
+
+  return !!intersect(rule, subject);
 }
-
-type Pattern = string[];
-
-// export function ⊃(a: Pattern, b: Pattern) {
-//   return superset(a, b);
-// }
-// export function ⊂(a: Pattern, b: Pattern) {
-//   return superset(b, a);
-// }
-// export function ∩(a: Pattern, b: Pattern) {
-//   return intersection(a, b);
-// }
-// export function ∪(a: Pattern, b: Pattern) {
-//   return union(a, b);
-// }
-// export function ∁(a: Pattern, b: Pattern) {
-//   return compliment(a, b);
-// }
 
 function simplify(winners: string[], candidate: string): string[] {
   if (can(winners, candidate)) return winners;
@@ -192,3 +128,5 @@ export function combineCollections(
     )
   );
 }
+
+*/

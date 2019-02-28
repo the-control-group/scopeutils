@@ -1,68 +1,47 @@
-export function normalize(pattern: string[]): string[] {
-  return pattern.map((segment, i, segments) => {
-    if (
-      segment !== "**" ||
-      (segments[i + 1] !== "**" && segments[i + 1] !== "*")
-    ) {
-      return segment;
-    }
+export const AnySingle: unique symbol = Symbol("*");
+export const AnyMultiple: unique symbol = Symbol("**");
 
-    segments[i + 1] = "**";
-    return "*";
-  });
-}
-
-export function simplify(patterns: string[][]): string[][] {
-  const set = new Set();
-  return patterns.filter(pattern => {
-    const key = pattern.join(".");
-    if (set.has(key)) {
-      return false;
-    }
-
-    set.add(key);
-    return true;
-  });
-}
+export type Segment = string | Symbol; // typeof AnySingle | typeof AnyMultiple;
+export type Pattern = Segment[];
 
 export function intersect(
-  left: string[],
-  rightA: string[],
-  rightB: string[]
-): string[][] {
+  left: Pattern,
+  rightA: Pattern,
+  rightB: Pattern
+): Pattern[] {
   const [a, ...restA] = rightA;
   const [b, ...restB] = rightB;
 
   // One or both segments have variable cardinality.
-  if (a === "**" || b === "**") {
+  if (a === AnyMultiple || b === AnyMultiple) {
     return [
-      ...(a === "**"
+      ...(a === AnyMultiple
         ? restB.length // CONTINUE
           ? ([
               ...intersect([...left, b], [a, ...restA], restB),
               ...(restA.length ? intersect([...left, b], restA, restB) : [])
-            ] as string[][])
-          : !restA.length || b === "**" // DONE
+            ] as Pattern[])
+          : !restA.length || b === AnyMultiple // DONE
           ? [[...left, b, ...restA]]
           : []
         : []),
 
-      ...(b === "**"
+      ...(b === AnyMultiple
         ? restA.length // CONTINUE
           ? ([
               ...intersect([...left, a], restA, [b, ...restB]),
               ...(restB.length ? intersect([...left, a], restA, restB) : [])
-            ] as string[][])
-          : !restB.length || a === "**" // DONE
+            ] as Pattern[])
+          : !restB.length || a === AnyMultiple // DONE
           ? [[...left, a, ...restB]]
           : []
         : [])
-    ] as string[][];
+    ] as Pattern[];
   }
 
   const match =
-    a === "*" || b === "*"
-      ? [...left, a == "*" ? b : a]
+    a === AnySingle || b === AnySingle
+      ? [...left, a == AnySingle ? b : a]
       : a == b
       ? [...left, a]
       : null;
@@ -86,5 +65,57 @@ export function intersect(
   return intersect(match, restA, restB);
 }
 
-console.log(simplify(intersect([], ["**", "b"], ["a", "**"])));
-console.log(simplify(intersect([], ["**", "b", "**"], ["**", "a", "**"])));
+export function normalize(pattern: Pattern): Pattern {
+  return pattern.map((segment, i, segments) => {
+    if (
+      segment !== AnyMultiple ||
+      (segments[i + 1] !== AnyMultiple && segments[i + 1] !== AnySingle)
+    ) {
+      return segment;
+    }
+
+    segments[i + 1] = AnyMultiple;
+    return AnySingle;
+  });
+}
+
+export function isEqual(a: Pattern, b: Pattern) {
+  a = normalize(a);
+  b = normalize(b);
+  return a.length === b.length && a.every((segment, i) => segment === b[i]);
+}
+
+export function isSubset(a: Pattern, b: Pattern) {
+  const intersection = simplify(intersect([], a, b));
+  if (intersection.length !== 1) {
+    return false;
+  }
+
+  return isEqual(a, intersection[0]);
+}
+
+export function isStrictSubset(a: Pattern, b: Pattern) {
+  if (isEqual(a, b)) {
+    return false;
+  }
+
+  return isSubset(a, b);
+}
+
+export function isSuperset(a: Pattern, b: Pattern) {
+  return isSubset(b, a);
+}
+
+export function isStrictSuperset(a: Pattern, b: Pattern) {
+  return isStrictSubset(b, a);
+}
+
+function s(winners: Pattern[], candidate: Pattern): Pattern[] {
+  if (winners.some(pattern => isSuperset(pattern, candidate))) return winners;
+  return [...winners, candidate];
+}
+
+// returns a de-duplicated array of scope rules
+export function simplify(collection: Pattern[]): Pattern[] {
+  return collection.reduce(s, []).reduceRight(s, []);
+}
