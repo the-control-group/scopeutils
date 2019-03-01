@@ -3,9 +3,10 @@ import {
   AnyMultiple,
   AnySingle,
   getIntersection,
-  isEqual,
   isSuperset
 } from "./pattern";
+
+export class InvalidScopeError extends Error {}
 
 // Parse a scope string into a Pattern array
 function parse(scope: string): Pattern[] {
@@ -99,7 +100,7 @@ export function test(
   strict: boolean = true
 ): boolean {
   if (!validate(subject)) {
-    return false;
+    throw new InvalidScopeError("The `subject` scope is invalid.");
   }
 
   if (Array.isArray(rule)) {
@@ -107,7 +108,7 @@ export function test(
   }
 
   if (!validate(rule)) {
-    return false;
+    throw new InvalidScopeError("The `rule` scope is invalid.");
   }
 
   const a = parse(rule);
@@ -133,6 +134,16 @@ export function test(
   );
 }
 
+function s(winners: string[], candidate: string): string[] {
+  if (test(winners, candidate)) return winners;
+  return winners.concat(candidate);
+}
+
+// returns a de-duplicated array of scope rules
+export function simplify(collection: string[]): string[] {
+  return collection.reduce(s, []).reduceRight(s, []);
+}
+
 export function limit(scopesA: string[], scopesB: string[]): string[] {
   const patternsA = scopesA.map(parse).filter(p => p.length > 0);
   const patternsB = scopesB.map(parse).filter(p => p.length > 0);
@@ -142,14 +153,4 @@ export function limit(scopesA: string[], scopesB: string[]): string[] {
       .flatMap(a => patternsB.flatMap(b => intersect([], a, b)))
       .map(stringify)
   );
-}
-
-function s(winners: string[], candidate: string): string[] {
-  if (test(winners, candidate)) return winners;
-  return winners.concat(candidate);
-}
-
-// returns a de-duplicated array of scope rules
-export function simplify(collection: string[]): string[] {
-  return collection.reduce(s, []).reduceRight(s, []);
 }

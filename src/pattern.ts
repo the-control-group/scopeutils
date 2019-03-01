@@ -164,17 +164,17 @@ export function getIntersection(a: Pattern, b: Pattern): Pattern[] {
   return simplify(intersect([], a, b));
 }
 
-export function isEqual(a: Pattern, b: Pattern) {
+export function isEqual(a: Pattern, b: Pattern): boolean {
   a = normalize(a);
   b = normalize(b);
   return a.length === b.length && a.every((segment, i) => segment === b[i]);
 }
 
-export function isSubset(a: Pattern, b: Pattern) {
+export function isSubset(a: Pattern, b: Pattern): boolean {
   return isSuperset(b, a);
 }
 
-export function isStrictSubset(a: Pattern, b: Pattern) {
+export function isStrictSubset(a: Pattern, b: Pattern): boolean {
   if (isEqual(a, b)) {
     return false;
   }
@@ -182,12 +182,12 @@ export function isStrictSubset(a: Pattern, b: Pattern) {
   return isSubset(a, b);
 }
 
-export function isSuperset(a: Pattern, b: Pattern) {
+export function isSuperset(a: Pattern, b: Pattern): boolean {
   a = normalize(a);
   b = normalize(b);
   return superset([], a, b);
 }
 
-export function isStrictSuperset(a: Pattern, b: Pattern) {
+export function isStrictSuperset(a: Pattern, b: Pattern): boolean {
   return isStrictSubset(b, a);
 }

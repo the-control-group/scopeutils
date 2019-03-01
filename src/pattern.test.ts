@@ -2,7 +2,6 @@ import t from "ava";
 import {
   AnyMultiple,
   AnySingle,
-  Pattern,
   getIntersection,
   isSuperset,
   compare
