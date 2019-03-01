@@ -64,7 +64,23 @@ function intersect(
   );
 }
 
+export function validate(scope: string): boolean {
+  const patterns = scope.split(":");
+  return (
+    patterns.length === 3 &&
+    patterns.every(pattern =>
+      /^(([a-zA-Z0-9_-]+|(\*(?!\*\*))+)\.)*([a-zA-Z0-9_-]+|(\*(?!\*\*))+)$/.test(
+        pattern
+      )
+    )
+  );
+}
+
 export function normalize(scope: string): string {
+  if (!validate(scope)) {
+    throw new InvalidScopeError("The scope is invalid.");
+  }
+
   return scope
     .split(":")
     .map(domain =>
@@ -79,18 +95,6 @@ export function normalize(scope: string): string {
         .join(".")
     )
     .join(":");
-}
-
-export function validate(scope: string): boolean {
-  const patterns = scope.split(":");
-  return (
-    patterns.length === 3 &&
-    patterns.every(pattern =>
-      /^(([a-zA-Z0-9_-]+|(\*(?!\*\*))+)\.)*([a-zA-Z0-9_-]+|(\*(?!\*\*))+)$/.test(
-        pattern
-      )
-    )
-  );
 }
 
 // according to the supplied rule, can the given subject be performed?
@@ -108,7 +112,7 @@ export function test(
   }
 
   if (!validate(rule)) {
-    throw new InvalidScopeError("The `rule` scope is invalid.");
+    throw new InvalidScopeError("A `rule` scope is invalid.");
   }
 
   const a = parse(rule);
@@ -136,7 +140,7 @@ export function test(
 
 function s(winners: string[], candidate: string): string[] {
   if (test(winners, candidate)) return winners;
-  return winners.concat(candidate);
+  return winners.concat(normalize(candidate));
 }
 
 // returns a de-duplicated array of scope rules
@@ -144,9 +148,21 @@ export function simplify(collection: string[]): string[] {
   return collection.reduce(s, []).reduceRight(s, []);
 }
 
-export function limit(scopesA: string[], scopesB: string[]): string[] {
-  const patternsA = scopesA.map(parse).filter(p => p.length > 0);
-  const patternsB = scopesB.map(parse).filter(p => p.length > 0);
+export function limit(collectionA: string[], collectionB: string[]): string[] {
+  if (!collectionA.every(validate)) {
+    throw new InvalidScopeError(
+      "One or more of the scopes in `collectionA` is invalid."
+    );
+  }
+
+  if (!collectionB.every(validate)) {
+    throw new InvalidScopeError(
+      "One or more of the scopes in `collectionB` is invalid."
+    );
+  }
+
+  const patternsA = collectionA.map(parse).filter(p => p.length > 0);
+  const patternsB = collectionB.map(parse).filter(p => p.length > 0);
 
   return simplify(
     patternsA

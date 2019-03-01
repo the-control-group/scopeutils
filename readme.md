@@ -2,7 +2,7 @@
 
 # Scope Utils
 
-This is a small collection of utility functions for creating, manipulating, and verifying [AuthX](https://github.com/the-control-group/authx) scopes. These scopes are human-readable, pattern-matching, combinable, and fully OAuth2-compatible. Please see [the AuthX repo](https://github.com/the-control-group/authx) for more details.
+This is a small collection of utility functions for creating, manipulating, and verifying [AuthX](https://github.com/the-control-group/authx) scopes. These scopes are human-readable, fully OAuth2-compatible, and support pattern matching and set algebra. Please see [the AuthX repo](https://github.com/the-control-group/authx) to see it in action.
 
 ## Anatomy of a scope
 
@@ -32,7 +32,7 @@ Install with `npm install --save scopeutils`
 
 **_Please see [the tests](src/test.mjs) for complete examples._**
 
-#### validate(scope: string): boolean
+#### `validate(scope: string): boolean`
 
 Validate that a scope is correctly formatted.
 
@@ -42,17 +42,21 @@ validate("realm:resource.identifier:action");
 // => true
 ```
 
-#### normalize(scope: string): string
+#### `normalize(scope: string): string`
+
+**_throws `InvalidScopeError`_** if the scope is invalid.
 
 Normalize a scope into its simplest representation.
 
 ```js
 import { normalize } from "scopeutils";
 normalize("realm:**.**:action");
-// => 'realm:**:action'
+// => 'realm:*.**:action'
 ```
 
-#### can(rule: string | Array<string>, subject: string, strict?: bool = true)
+#### `test(rule: string | string[], subject: string, strict: boolean = true): boolean`
+
+**_throws `InvalidScopeError`_** if any `rule` or `subject` scope is invalid.
 
 Check that the scope or scopes in `rule` permit the scope `subject`.
 
@@ -62,41 +66,38 @@ Check that the scope or scopes in `rule` permit the scope `subject`.
 ```js
 import { can } from "scopeutils";
 
-// strict mode enabled (default)
-can("realm:**:action", "realm:resource.identifier:action", true);
+// strict mode (default)
+can("realm:**:action", "realm:resource.identifier:action");
 // => true
 
-// strict mode disabled
+can("realm:resource.*:action", "realm:resource.**:action");
+// => false
+
+// loose mode
 can("realm:resource.*:action", "realm:resource.**:action", false);
 // => true
 ```
 
-#### combine(a: string, b: string): null | string
+### `simplify(collection: string[]): string[]`
 
-Find the intersection (the most permissive common scope) of scopes `a` and `b`.
+**_throws `InvalidScopeError`_** if any scopes in `collection` are invalid.
 
-```js
-import { combine } from "scopeutils";
-combine("realm:resource.*:action", "realm:**:action");
-// => 'realm:resource.*:action'
-```
-
-#### combineCollections(collectionA: Array<string>, collectionB: Array<string>): Array<string>
-
-Find all the intersections between the scopes in `collectionA` and the scopes in `collectionB`.
-
-```js
-import { combineCollections } from "scopeutils";
-combineCollections(["realm:resource.*:action"], ["realm:**:action"]);
-// => ['realm:resource.*:action']
-```
-
-### simplifyCollection(collection: Array<string>): Array<string>
-
-Get an array of the most permissive scopes in `collection`, omiting any scopes that are a subset of another scope in the collection.
+Simplify the collection of scopes in `collection` by omiting any scopes that are a subset of another scope in the collection. All scopes in the returned collection are normalized.
 
 ```js
 import { simplifyCollection } from "scopeutils";
 simplifyCollection(["realm:resource.*:action", "realm:**:action"]);
 // => ['realm:**:action']
+```
+
+#### `function limit(scopesA: string[], scopesB: string[]): string[`
+
+**_throws `InvalidScopeError`_** if any scopes in `scopesA` or `scopesB` are invalid.
+
+Limit the collection of scopes in `collectionA` by the collection of scopes in `collectionB`, returning a collection of scopes that represent all intersections – every ability – common to both inputs.
+
+```js
+import { limit } from "scopeutils";
+limit(["realm:resource.*:action.*"], ["realm:**:action.read"]);
+// => ['realm:resource.*:action.read']
 ```
