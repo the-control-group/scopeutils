@@ -1,14 +1,50 @@
 export const AnySingle: unique symbol = Symbol("*");
 export const AnyMultiple: unique symbol = Symbol("**");
 
-export type Segment = string | Symbol; // typeof AnySingle | typeof AnyMultiple;
+export type Segment = string | typeof AnySingle | typeof AnyMultiple;
 export type Pattern = Segment[];
 
-export function intersect(
-  left: Pattern,
-  rightA: Pattern,
-  rightB: Pattern
-): Pattern[] {
+function superset(left: Pattern, rightA: Pattern, rightB: Pattern): boolean {
+  const [a, ...restA] = rightA;
+  const [b, ...restB] = rightB;
+
+  // One or both segments have variable cardinality.
+  if (a === AnyMultiple) {
+    return restB.length // CONTINUE
+      ? superset([...left, b], [a, ...restA], restB) ||
+          (Boolean(restA.length) && superset([...left, b], restA, restB))
+      : !restA.length; // DONE
+  }
+
+  const match: null | Pattern =
+    a === AnySingle
+      ? b === AnyMultiple
+        ? null
+        : [...left, b]
+      : a == b
+      ? [...left, a]
+      : null;
+
+  // DONE: The segments do not match
+  if (!match) {
+    return false;
+  }
+
+  // DONE: Both patterns are finished.
+  if (!restA.length && !restB.length) {
+    return Boolean(match);
+  }
+
+  // DONE: The patterns have different cardinality.
+  if (!restA.length || !restB.length) {
+    return false;
+  }
+
+  // CONTINUE
+  return superset(match, restA, restB);
+}
+
+function intersect(left: Pattern, rightA: Pattern, rightB: Pattern): Pattern[] {
   const [a, ...restA] = rightA;
   const [b, ...restB] = rightB;
 
@@ -39,7 +75,7 @@ export function intersect(
     ] as Pattern[];
   }
 
-  const match =
+  const match: null | Pattern =
     a === AnySingle || b === AnySingle
       ? [...left, a == AnySingle ? b : a]
       : a == b
@@ -65,6 +101,25 @@ export function intersect(
   return intersect(match, restA, restB);
 }
 
+export function compare(a: Pattern, b: Pattern): 0 | -1 | 1 {
+  for (var i = a.length - 1; i >= 0; i--) {
+    const segmentA = a[i];
+    const segmentB = b[i];
+
+    if (segmentA === segmentB) {
+      continue;
+    }
+
+    if (segmentA === AnyMultiple) return -1;
+    if (segmentB === AnyMultiple) return 1;
+    if (segmentA === AnySingle) return -1;
+    if (segmentB === AnySingle) return 1;
+    return segmentA > segmentB ? -1 : 1;
+  }
+
+  return 0;
+}
+
 export function normalize(pattern: Pattern): Pattern {
   return pattern.map((segment, i, segments) => {
     if (
@@ -79,6 +134,12 @@ export function normalize(pattern: Pattern): Pattern {
   });
 }
 
+export function getIntersection(a: Pattern, b: Pattern): Pattern[] {
+  a = normalize(a);
+  b = normalize(b);
+  return simplify(intersect([], a, b));
+}
+
 export function isEqual(a: Pattern, b: Pattern) {
   a = normalize(a);
   b = normalize(b);
@@ -86,12 +147,7 @@ export function isEqual(a: Pattern, b: Pattern) {
 }
 
 export function isSubset(a: Pattern, b: Pattern) {
-  const intersection = simplify(intersect([], a, b));
-  if (intersection.length !== 1) {
-    return false;
-  }
-
-  return isEqual(a, intersection[0]);
+  return isSuperset(b, a);
 }
 
 export function isStrictSubset(a: Pattern, b: Pattern) {
@@ -103,7 +159,9 @@ export function isStrictSubset(a: Pattern, b: Pattern) {
 }
 
 export function isSuperset(a: Pattern, b: Pattern) {
-  return isSubset(b, a);
+  a = normalize(a);
+  b = normalize(b);
+  return superset([], a, b);
 }
 
 export function isStrictSuperset(a: Pattern, b: Pattern) {
@@ -115,7 +173,6 @@ function s(winners: Pattern[], candidate: Pattern): Pattern[] {
   return [...winners, candidate];
 }
 
-// returns a de-duplicated array of scope rules
 export function simplify(collection: Pattern[]): Pattern[] {
   return collection.reduce(s, []).reduceRight(s, []);
 }

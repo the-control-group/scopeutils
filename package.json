@@ -1,7 +1,7 @@
 {
   "name": "scopeutils",
-  "version": "1.1.0",
-  "description": "Simple permission scopes and patterns with support for algebraic operations.",
+  "version": "2.0.0",
+  "description": "Simple permission scopes with intuitive pattern matching.",
   "license": "MIT",
   "author": {
     "name": "Mike Marcacci",
