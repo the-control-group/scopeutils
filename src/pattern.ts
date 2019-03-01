@@ -122,8 +122,8 @@ function simplify(collection: Pattern[]): Pattern[] {
 
 export function compare(a: Pattern, b: Pattern): 0 | -1 | 1 {
   for (var i = a.length - 1; i >= 0; i--) {
-    const segmentA = a[i];
-    const segmentB = b[i];
+    const segmentA: Segment = a[i];
+    const segmentB: Segment = b[i];
 
     if (segmentA === segmentB) {
       continue;
@@ -133,7 +133,7 @@ export function compare(a: Pattern, b: Pattern): 0 | -1 | 1 {
     if (segmentB === AnyMultiple) return 1;
     if (segmentA === AnySingle) return -1;
     if (segmentB === AnySingle) return 1;
-    return segmentA > segmentB ? -1 : 1;
+    return segmentA > segmentB ? 1 : -1;
   }
 
   return 0;

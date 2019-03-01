@@ -1,11 +1,35 @@
 import t from "ava";
 import {
+  Pattern,
   AnyMultiple,
   AnySingle,
   getIntersection,
   isSuperset,
   compare
 } from "./pattern";
+
+t("compare", t => {
+  ([
+    { before: [["a"], ["a"]], after: [["a"], ["a"]] },
+    { before: [["a"], ["b"]], after: [["a"], ["b"]] },
+    { before: [["b"], ["a"]], after: [["a"], ["b"]] },
+    { before: [["*"], ["b"]], after: [["*"], ["b"]] },
+    { before: [["a"], ["*"]], after: [["*"], ["a"]] },
+    { before: [["**"], ["b"]], after: [["**"], ["b"]] },
+    { before: [["a"], ["**"]], after: [["**"], ["a"]] },
+    { before: [["**"], ["*"]], after: [["*"], ["**"]] },
+    { before: [["*"], ["**"]], after: [["*"], ["**"]] },
+    { before: [["a"], ["*"], ["**"]], after: [["*"], ["**"], ["a"]] },
+    { before: [["a"], ["**"], ["*"]], after: [["*"], ["**"], ["a"]] },
+    { before: [["*"], ["a"], ["**"]], after: [["*"], ["**"], ["a"]] },
+    { before: [["**"], ["*"], ["a"]], after: [["*"], ["**"], ["a"]] }
+  ] as {
+    before: Pattern[];
+    after: Pattern[];
+  }[]).forEach(({ before, after }) => {
+    t.deepEqual(before.sort(compare), after);
+  });
+});
 
 t("isSuperset(a, b) - a ⊉ a.b", t => {
   t.is(isSuperset(["a"], ["a", "b"]), false);
@@ -231,7 +255,7 @@ t(
   t => {
     t.deepEqual(
       getIntersection([AnyMultiple, "b"], ["a", AnyMultiple]).sort(compare),
-      [["a", "b"], ["a", AnyMultiple, "b"]]
+      [["a", AnyMultiple, "b"], ["a", "b"]]
     );
   }
 );
