@@ -21,26 +21,26 @@ import { validate, normalize, test, limit, simplify } from ".";
 });
 
 ([
-  { args: ["client:resource:action:"], result: "client:resource:action:" },
-  { args: ["a.b.c:resource:action:"], result: "a.b.c:resource:action:" },
-  { args: ["*.*.c:resource:action:"], result: "*.*.c:resource:action:" },
-  { args: ["*.b.*:resource:action:"], result: "*.b.*:resource:action:" },
-  { args: ["a.*.*:resource:action:"], result: "a.*.*:resource:action:" },
-  { args: ["*.*.*:resource:action:"], result: "*.*.*:resource:action:" },
-  { args: ["*.**.c:resource:action:"], result: "*.**.c:resource:action:" },
-  { args: ["**.*.c:resource:action:"], result: "*.**.c:resource:action:" },
-  { args: ["**.b.*:resource:action:"], result: "**.b.*:resource:action:" },
-  { args: ["*.b.**:resource:action:"], result: "*.b.**:resource:action:" },
-  { args: ["**.b.**:resource:action:"], result: "**.b.**:resource:action:" },
-  { args: ["a.**.*:resource:action:"], result: "a.*.**:resource:action:" },
-  { args: ["a.*.**:resource:action:"], result: "a.*.**:resource:action:" },
-  { args: ["**.*.*:resource:action:"], result: "*.*.**:resource:action:" },
-  { args: ["*.**.*:resource:action:"], result: "*.*.**:resource:action:" },
-  { args: ["*.*.**:resource:action:"], result: "*.*.**:resource:action:" },
-  { args: ["**.**.c:resource:action:"], result: "*.**.c:resource:action:" },
-  { args: ["*.**.**:resource:action:"], result: "*.*.**:resource:action:" },
-  { args: ["**.*.**:resource:action:"], result: "*.*.**:resource:action:" },
-  { args: ["**.**.**:resource:action:"], result: "*.*.**:resource:action:" }
+  { args: ["client:resource:action"], result: "client:resource:action" },
+  { args: ["a.b.c:resource:action"], result: "a.b.c:resource:action" },
+  { args: ["*.*.c:resource:action"], result: "*.*.c:resource:action" },
+  { args: ["*.b.*:resource:action"], result: "*.b.*:resource:action" },
+  { args: ["a.*.*:resource:action"], result: "a.*.*:resource:action" },
+  { args: ["*.*.*:resource:action"], result: "*.*.*:resource:action" },
+  { args: ["*.**.c:resource:action"], result: "*.**.c:resource:action" },
+  { args: ["**.*.c:resource:action"], result: "*.**.c:resource:action" },
+  { args: ["**.b.*:resource:action"], result: "**.b.*:resource:action" },
+  { args: ["*.b.**:resource:action"], result: "*.b.**:resource:action" },
+  { args: ["**.b.**:resource:action"], result: "**.b.**:resource:action" },
+  { args: ["a.**.*:resource:action"], result: "a.*.**:resource:action" },
+  { args: ["a.*.**:resource:action"], result: "a.*.**:resource:action" },
+  { args: ["**.*.*:resource:action"], result: "*.*.**:resource:action" },
+  { args: ["*.**.*:resource:action"], result: "*.*.**:resource:action" },
+  { args: ["*.*.**:resource:action"], result: "*.*.**:resource:action" },
+  { args: ["**.**.c:resource:action"], result: "*.**.c:resource:action" },
+  { args: ["*.**.**:resource:action"], result: "*.*.**:resource:action" },
+  { args: ["**.*.**:resource:action"], result: "*.*.**:resource:action" },
+  { args: ["**.**.**:resource:action"], result: "*.*.**:resource:action" }
 ] as { args: [string]; result: string }[]).forEach(({ args, result }) => {
   t(`normalize ${args[0]} => ${result}`, t => t.is(normalize(...args), result));
 });

@@ -16,7 +16,7 @@ realm resource  action
 
 ```
 
-Each domain can contain parts, separated by the `.` character. Domain parts can be `/[a-zA-Z0-9_]*/` strings or glob pattern identifiers `*` or `**`:
+Each domain can contain segments, separated by the `.` character. Domain segments can be `/[a-zA-Z0-9_]*/` strings or glob pattern identifiers `*` or `**`:
 
 ```
 role.abc
@@ -30,9 +30,9 @@ Install with `npm install --save scopeutils`
 
 ## Usage
 
-**_Please see [the tests](src/test.mjs) for complete examples._**
+Please see [the tests](src/test.mjs) for complete examples.
 
-#### `validate(scope: string): boolean`
+### `validate(scope: string): boolean`
 
 Validate that a scope is correctly formatted.
 
@@ -42,9 +42,9 @@ validate("realm:resource.identifier:action");
 // => true
 ```
 
-#### `normalize(scope: string): string`
+### `normalize(scope: string): string`
 
-**_throws `InvalidScopeError`_** if the scope is invalid.
+- **_throws `InvalidScopeError` if the scope is invalid._**
 
 Normalize a scope into its simplest representation.
 
@@ -54,9 +54,9 @@ normalize("realm:**.**:action");
 // => 'realm:*.**:action'
 ```
 
-#### `test(rule: string | string[], subject: string, strict: boolean = true): boolean`
+### `test(rule: string | string[], subject: string, strict: boolean = true): boolean`
 
-**_throws `InvalidScopeError`_** if any `rule` or `subject` scope is invalid.
+- **_throws `InvalidScopeError` if any `rule` or `subject` scope is invalid._**
 
 Check that the scope or scopes in `rule` permit the scope `subject`.
 
@@ -80,7 +80,7 @@ can("realm:resource.*:action", "realm:resource.**:action", false);
 
 ### `simplify(collection: string[]): string[]`
 
-**_throws `InvalidScopeError`_** if any scopes in `collection` are invalid.
+- **_throws `InvalidScopeError` if any scopes in `collection` are invalid._**
 
 Simplify the collection of scopes in `collection` by omiting any scopes that are a subset of another scope in the collection. All scopes in the returned collection are normalized.
 
@@ -90,9 +90,9 @@ simplifyCollection(["realm:resource.*:action", "realm:**:action"]);
 // => ['realm:**:action']
 ```
 
-#### `function limit(scopesA: string[], scopesB: string[]): string[`
+### `function limit(scopesA: string[], scopesB: string[]): string[`
 
-**_throws `InvalidScopeError`_** if any scopes in `scopesA` or `scopesB` are invalid.
+- **_throws `InvalidScopeError` if any scopes in `scopesA` or `scopesB` are invalid._**
 
 Limit the collection of scopes in `collectionA` by the collection of scopes in `collectionB`, returning a collection of scopes that represent all intersections – every ability – common to both inputs.
 

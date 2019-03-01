@@ -59,9 +59,9 @@ function intersect(
     return getIntersection(a, b).map(pattern => [...left, pattern]);
   }
 
-  return getIntersection(a, b).flatMap(pattern =>
-    intersect([...left, pattern], restA, restB)
-  );
+  return getIntersection(a, b)
+    .map(pattern => intersect([...left, pattern], restA, restB))
+    .reduce((x, y) => x.concat(y), []);
 }
 
 export function validate(scope: string): boolean {
@@ -166,7 +166,12 @@ export function limit(collectionA: string[], collectionB: string[]): string[] {
 
   return simplify(
     patternsA
-      .flatMap(a => patternsB.flatMap(b => intersect([], a, b)))
+      .map(a =>
+        patternsB
+          .map(b => intersect([], a, b))
+          .reduce((x, y) => x.concat(y), [])
+      )
+      .reduce((x, y) => x.concat(y), [])
       .map(stringify)
   );
 }

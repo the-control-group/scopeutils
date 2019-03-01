@@ -42,5 +42,6 @@
     "lint": "prettier -c '**/*.{json,yml,md,ts}' && eslint src --ext ts",
     "format": "prettier --list-different --write '**/*.{json,yml,md,ts}'",
     "watch": "rm -rf lib && npx tsc --watch"
-  }
+  },
+  "dependencies": {}
 }
