@@ -1,32 +1,30 @@
-/*
-
 import {
   Pattern,
   AnyMultiple,
   AnySingle,
-  intersect,
+  getIntersection,
   isEqual,
   isSuperset
 } from "./pattern";
 
-export function parse(scope: string): Pattern[] {
-  return scope.split(
-    ":".map(pattern =>
-      pattern.split(".").map(segment => {
-        switch (segment) {
-          case "**":
-            return AnyMultiple;
-          case "*":
-            return AnySingle;
-          default:
-            return segment;
-        }
-      })
-    )
+// Parse a scope string into a Pattern array
+function parse(scope: string): Pattern[] {
+  return scope.split(":").map(pattern =>
+    pattern.split(".").map(segment => {
+      switch (segment) {
+        case "**":
+          return AnyMultiple;
+        case "*":
+          return AnySingle;
+        default:
+          return segment;
+      }
+    })
   );
 }
 
-export function stringify(scope: Pattern[]): string {
+// Stringify a Pattern array
+function stringify(scope: Pattern[]): string {
   return scope
     .map(pattern =>
       pattern
@@ -43,6 +41,26 @@ export function stringify(scope: Pattern[]): string {
         .join(".")
     )
     .join(":");
+}
+
+function intersect(
+  left: Pattern[],
+  rightA: Pattern[],
+  rightB: Pattern[]
+): Pattern[][] {
+  // INVARIENT: rightA.length === rightB.length
+  // INVARIENT: rightA.length > 0
+  // INVARIENT: rightB.length > 0
+  const [a, ...restA] = rightA;
+  const [b, ...restB] = rightB;
+
+  if (!restA.length) {
+    return getIntersection(a, b).map(pattern => [...left, pattern]);
+  }
+
+  return getIntersection(a, b).flatMap(pattern =>
+    intersect([...left, pattern], restA, restB)
+  );
 }
 
 export function normalize(scope: string): string {
@@ -66,7 +84,7 @@ export function validate(scope: string): boolean {
   const patterns = scope.split(":");
   return (
     patterns.length === 3 &&
-    patterns.map(pattern =>
+    patterns.every(pattern =>
       /^(([a-zA-Z0-9_-]+|(\*(?!\*\*))+)\.)*([a-zA-Z0-9_-]+|(\*(?!\*\*))+)$/.test(
         pattern
       )
@@ -75,58 +93,63 @@ export function validate(scope: string): boolean {
 }
 
 // according to the supplied rule, can the given subject be performed?
-export function can(
+export function test(
   rule: string | string[],
   subject: string,
   strict: boolean = true
 ): boolean {
+  if (!validate(subject)) {
+    return false;
+  }
+
   if (Array.isArray(rule)) {
-    return rule.some(r => can(r, subject, strict));
+    return rule.some(r => test(r, subject, strict));
+  }
+
+  if (!validate(rule)) {
+    return false;
   }
 
   const a = parse(rule);
   const b = parse(subject);
 
+  // In strict mode, ensure that the subject is a subset or equal to at least
+  // one of the rule scopes.
   if (strict) {
-    return isSuperset(a, b);
+    return (
+      a.length === b.length &&
+      a.every((patternA: Pattern, i: number) => isSuperset(patternA, b[i]))
+    );
   }
 
-  return !!intersect(rule, subject);
-}
-
-function simplify(winners: string[], candidate: string): string[] {
-  if (can(winners, candidate)) return winners;
-  return winners.concat(candidate);
-}
-
-// returns a de-duplicated array of scope rules
-export function simplifyCollection(collection: string[]): string[] {
-  return collection.reduce(simplify, []).reduceRight(simplify, []);
-}
-
-// calculates the intersection of scope rules or returns null
-export function combineCollections(
-  collectionA: string[],
-  collectionB: string[]
-): string[] {
-  return simplifyCollection(
-    // This is the desired logic, rewritten to support older versions of JS
-    // collectionA
-    //   .flatMap(a => collectionB.flatMap(b => combine(a, b)))
-    //   .filter((x => typeof x == "string") as (x: null | string) => x is string)
-
-    ([] as string[]).concat(
-      ...collectionA.map(a =>
-        ([] as string[]).concat(
-          collectionB
-            .map(b => combine(a, b))
-            .filter((x => typeof x == "string") as (
-              x: null | string
-            ) => x is string)
-        )
-      )
+  // In weak mode, ensure that the subject and at least one of the rule scopes
+  // have an intersection.
+  return (
+    a.length === b.length &&
+    a.every(
+      (patternA: Pattern, i: number) =>
+        getIntersection(patternA, b[i]).length > 0
     )
   );
 }
 
-*/
+export function limit(scopesA: string[], scopesB: string[]): string[] {
+  const patternsA = scopesA.map(parse).filter(p => p.length > 0);
+  const patternsB = scopesB.map(parse).filter(p => p.length > 0);
+
+  return simplify(
+    patternsA
+      .flatMap(a => patternsB.flatMap(b => intersect([], a, b)))
+      .map(stringify)
+  );
+}
+
+function s(winners: string[], candidate: string): string[] {
+  if (test(winners, candidate)) return winners;
+  return winners.concat(candidate);
+}
+
+// returns a de-duplicated array of scope rules
+export function simplify(collection: string[]): string[] {
+  return collection.reduce(s, []).reduceRight(s, []);
+}

@@ -5,6 +5,8 @@ export type Segment = string | typeof AnySingle | typeof AnyMultiple;
 export type Pattern = Segment[];
 
 function superset(left: Pattern, rightA: Pattern, rightB: Pattern): boolean {
+  // INVARIENT: rightA.length > 0
+  // INVARIENT: rightB.length > 0
   const [a, ...restA] = rightA;
   const [b, ...restB] = rightB;
 
@@ -45,6 +47,8 @@ function superset(left: Pattern, rightA: Pattern, rightB: Pattern): boolean {
 }
 
 function intersect(left: Pattern, rightA: Pattern, rightB: Pattern): Pattern[] {
+  // INVARIENT: rightA.length > 0
+  // INVARIENT: rightB.length > 0
   const [a, ...restA] = rightA;
   const [b, ...restB] = rightB;
 
@@ -101,6 +105,21 @@ function intersect(left: Pattern, rightA: Pattern, rightB: Pattern): Pattern[] {
   return intersect(match, restA, restB);
 }
 
+function s(winners: Pattern[], candidate: Pattern): Pattern[] {
+  if (
+    candidate.length < 1 ||
+    winners.some(pattern => isSuperset(pattern, candidate))
+  ) {
+    return winners;
+  }
+
+  return [...winners, candidate];
+}
+
+function simplify(collection: Pattern[]): Pattern[] {
+  return collection.reduce(s, []).reduceRight(s, []);
+}
+
 export function compare(a: Pattern, b: Pattern): 0 | -1 | 1 {
   for (var i = a.length - 1; i >= 0; i--) {
     const segmentA = a[i];
@@ -137,6 +156,11 @@ export function normalize(pattern: Pattern): Pattern {
 export function getIntersection(a: Pattern, b: Pattern): Pattern[] {
   a = normalize(a);
   b = normalize(b);
+
+  if (a.length < 1 || b.length < 1) {
+    return [];
+  }
+
   return simplify(intersect([], a, b));
 }
 
@@ -166,13 +190,4 @@ export function isSuperset(a: Pattern, b: Pattern) {
 
 export function isStrictSuperset(a: Pattern, b: Pattern) {
   return isStrictSubset(b, a);
-}
-
-function s(winners: Pattern[], candidate: Pattern): Pattern[] {
-  if (winners.some(pattern => isSuperset(pattern, candidate))) return winners;
-  return [...winners, candidate];
-}
-
-export function simplify(collection: Pattern[]): Pattern[] {
-  return collection.reduce(s, []).reduceRight(s, []);
 }
