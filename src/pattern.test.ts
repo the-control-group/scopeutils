@@ -13,16 +13,34 @@ t("compare", t => {
     { before: [["a"], ["a"]], after: [["a"], ["a"]] },
     { before: [["a"], ["b"]], after: [["a"], ["b"]] },
     { before: [["b"], ["a"]], after: [["a"], ["b"]] },
-    { before: [["*"], ["b"]], after: [["*"], ["b"]] },
-    { before: [["a"], ["*"]], after: [["*"], ["a"]] },
-    { before: [["**"], ["b"]], after: [["**"], ["b"]] },
-    { before: [["a"], ["**"]], after: [["**"], ["a"]] },
-    { before: [["**"], ["*"]], after: [["*"], ["**"]] },
-    { before: [["*"], ["**"]], after: [["*"], ["**"]] },
-    { before: [["a"], ["*"], ["**"]], after: [["*"], ["**"], ["a"]] },
-    { before: [["a"], ["**"], ["*"]], after: [["*"], ["**"], ["a"]] },
-    { before: [["*"], ["a"], ["**"]], after: [["*"], ["**"], ["a"]] },
-    { before: [["**"], ["*"], ["a"]], after: [["*"], ["**"], ["a"]] }
+    { before: [[AnySingle], ["b"]], after: [[AnySingle], ["b"]] },
+    { before: [["a"], [AnySingle]], after: [[AnySingle], ["a"]] },
+    { before: [[AnyMultiple], ["b"]], after: [[AnyMultiple], ["b"]] },
+    { before: [["a"], [AnyMultiple]], after: [[AnyMultiple], ["a"]] },
+    {
+      before: [[AnyMultiple], [AnySingle]],
+      after: [[AnySingle], [AnyMultiple]]
+    },
+    {
+      before: [[AnySingle], [AnyMultiple]],
+      after: [[AnySingle], [AnyMultiple]]
+    },
+    {
+      before: [["a"], [AnySingle], [AnyMultiple]],
+      after: [[AnySingle], [AnyMultiple], ["a"]]
+    },
+    {
+      before: [["a"], [AnyMultiple], [AnySingle]],
+      after: [[AnySingle], [AnyMultiple], ["a"]]
+    },
+    {
+      before: [[AnySingle], ["a"], [AnyMultiple]],
+      after: [[AnySingle], [AnyMultiple], ["a"]]
+    },
+    {
+      before: [[AnyMultiple], [AnySingle], ["a"]],
+      after: [[AnySingle], [AnyMultiple], ["a"]]
+    }
   ] as {
     before: Pattern[];
     after: Pattern[];

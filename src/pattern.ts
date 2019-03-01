@@ -129,10 +129,10 @@ export function compare(a: Pattern, b: Pattern): 0 | -1 | 1 {
       continue;
     }
 
-    if (segmentA === AnyMultiple) return -1;
-    if (segmentB === AnyMultiple) return 1;
     if (segmentA === AnySingle) return -1;
     if (segmentB === AnySingle) return 1;
+    if (segmentA === AnyMultiple) return -1;
+    if (segmentB === AnyMultiple) return 1;
     return segmentA > segmentB ? 1 : -1;
   }
 
