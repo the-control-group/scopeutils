@@ -64,17 +64,17 @@ Check that the scope or scopes in `rule` permit the scope `subject`.
 - If strict is set to `false`, the function returns `true` if `rule` and `subject` intersect at all. This is useful when checking if a user can perform any subset of the actions represented by the `subject` scope.
 
 ```js
-import { can } from "scopeutils";
+import { test } from "scopeutils";
 
 // strict mode (default)
-can("realm:**:action", "realm:resource.identifier:action");
+test("realm:**:action", "realm:resource.identifier:action");
 // => true
 
-can("realm:resource.*:action", "realm:resource.**:action");
+test("realm:resource.*:**", "realm:**:action");
 // => false
 
 // loose mode
-can("realm:resource.*:action", "realm:resource.**:action", false);
+test("realm:resource.*:**", "realm:**:action", false);
 // => true
 ```
 

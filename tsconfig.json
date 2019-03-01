@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "lib": ["es5"],
-    "target": "es5",
+    "lib": ["ES2018"],
+    "target": "ES2018",
     "module": "commonjs",
     "outDir": "./lib",
     "declaration": true,

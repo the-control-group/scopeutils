@@ -23,7 +23,7 @@
   "main": "lib",
   "types": "./lib/index.d.ts",
   "engines": {
-    "node": ">=6"
+    "node": ">=8.5"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^1.4.0",
