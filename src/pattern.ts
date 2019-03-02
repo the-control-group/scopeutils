@@ -121,7 +121,11 @@ function simplify(collection: Pattern[]): Pattern[] {
 }
 
 export function compare(a: Pattern, b: Pattern): 0 | -1 | 1 {
-  for (var i = a.length - 1; i >= 0; i--) {
+  for (let i = 0; i < a.length - 1; i--) {
+    if (i > b.length) {
+      return 1;
+    }
+
     const segmentA: Segment = a[i];
     const segmentB: Segment = b[i];
 
@@ -136,7 +140,7 @@ export function compare(a: Pattern, b: Pattern): 0 | -1 | 1 {
     return segmentA > segmentB ? 1 : -1;
   }
 
-  return 0;
+  return a.length < b.length ? -1 : 0;
 }
 
 export function normalize(pattern: Pattern): Pattern {
