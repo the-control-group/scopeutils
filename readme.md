@@ -101,7 +101,7 @@ simplifyCollection(["realm:resource.*:action", "realm:**:action"]);
 // => ['realm:**:action']
 ```
 
-### `function limit(scopesA: string[], scopesB: string[]): string[`
+### `limit(scopesA: string[], scopesB: string[]): string[]`
 
 - **_throws `InvalidScopeError` if any scopes in `scopesA` or `scopesB` are invalid._**
 
