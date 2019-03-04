@@ -121,7 +121,7 @@ function simplify(collection: Pattern[]): Pattern[] {
 }
 
 export function compare(a: Pattern, b: Pattern): 0 | -1 | 1 {
-  for (let i = 0; i < a.length - 1; i--) {
+  for (let i = 0; i < a.length; i++) {
     if (i > b.length) {
       return 1;
     }

@@ -38,7 +38,7 @@
   },
   "scripts": {
     "prepare": "rm -rf lib && npx tsc",
-    "test": "npm run prepare && ava --verbose lib/*.test.js",
+    "test": "npm run prepare && npx ava --verbose lib/*.test.js",
     "lint": "prettier -c '**/*.{json,yml,md,ts}' && eslint src --ext ts",
     "format": "prettier --list-different --write '**/*.{json,yml,md,ts}'",
     "watch": "rm -rf lib && npx tsc --watch"
