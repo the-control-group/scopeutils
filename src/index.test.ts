@@ -15,7 +15,8 @@ import { validate, normalize, test, limit, simplify } from ".";
   { args: ["*.b.c:d.*.f:g.h.*"], result: true },
   { args: ["**.b.c:d.**.f:g.h.**"], result: true },
   { args: ["*:*:*"], result: true },
-  { args: ["**:**:**"], result: true }
+  { args: ["**:**:**"], result: true },
+  { args: ["***:**:**"], result: false }
 ] as { args: [string]; result: boolean }[]).forEach(({ args, result }) => {
   t(`validate ${args[0]} => ${result}`, t => t.is(validate(...args), result));
 });
