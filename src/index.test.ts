@@ -1,6 +1,13 @@
 import t from "ava";
 
-import { validate, normalize, test, limit, simplify } from ".";
+import {
+  validate,
+  normalize,
+  isSuperset,
+  hasIntersection,
+  getIntersection,
+  simplify
+} from ".";
 
 ([
   { args: ["client"], result: false },
@@ -172,146 +179,142 @@ import { validate, normalize, test, limit, simplify } from ".";
   args: [string, string] | [string[], string];
   result: boolean;
 }[]).forEach(({ args, result }) => {
-  t(`test (strict) ${args[0]} ${args[1]} => ${result}`, t =>
-    t.is(test(args[0], args[1]), result)
+  t(`isSuperset ${args[0]} ${args[1]} => ${result}`, t =>
+    t.is(isSuperset(args[0], args[1]), result)
   );
 });
 
 ([
   {
-    args: ["client:resource:action", "client:resource:action", false],
+    args: ["client:resource:action", "client:resource:action"],
     result: true
   },
   {
-    args: ["client:resource:action", "wrongclient:resource:action", false],
+    args: ["client:resource:action", "wrongclient:resource:action"],
     result: false
   },
   {
-    args: ["client:resource:action", "client:wrongresource:action", false],
+    args: ["client:resource:action", "client:wrongresource:action"],
     result: false
   },
   {
-    args: ["client:resource:action", "client:resource:wrongaction", false],
+    args: ["client:resource:action", "client:resource:wrongaction"],
     result: false
   },
   {
-    args: ["client:resource:action", "client.a:resource.b:action.c", false],
+    args: ["client:resource:action", "client.a:resource.b:action.c"],
     result: false
   },
   {
-    args: ["client.*:resource:action", "client.a:resource:action", false],
+    args: ["client.*:resource:action", "client.a:resource:action"],
     result: true
   },
   {
-    args: ["client.*:resource:action", "client.*:resource:action", false],
+    args: ["client.*:resource:action", "client.*:resource:action"],
     result: true
   },
   {
-    args: ["client.*:resource:action", "client.**:resource:action", false],
+    args: ["client.*:resource:action", "client.**:resource:action"],
     result: true
   },
   {
-    args: ["client.a:resource:action", "client.*:resource:action", false],
+    args: ["client.a:resource:action", "client.*:resource:action"],
     result: true
   },
   {
-    args: ["client.*:resource:action", "client:resource:action", false],
+    args: ["client.*:resource:action", "client:resource:action"],
     result: false
   },
   {
-    args: ["client.*:resource:action", "client:resource.a:action", false],
+    args: ["client.*:resource:action", "client:resource.a:action"],
     result: false
   },
   {
-    args: ["client.*:resource:action", "client.a.b:resource:action", false],
+    args: ["client.*:resource:action", "client.a.b:resource:action"],
     result: false
   },
   {
-    args: ["client.*:resource:action", "client.a:wrongresource:action", false],
+    args: ["client.*:resource:action", "client.a:wrongresource:action"],
     result: false
   },
   {
-    args: ["client.*:resource:action", "client.a:resource:wrongaction", false],
+    args: ["client.*:resource:action", "client.a:resource:wrongaction"],
     result: false
   },
   {
-    args: ["client.**:resource:action", "client.a:resource:action", false],
+    args: ["client.**:resource:action", "client.a:resource:action"],
     result: true
   },
   {
-    args: ["client.**:resource:action", "client.a.b:resource:action", false],
+    args: ["client.**:resource:action", "client.a.b:resource:action"],
     result: true
   },
   {
-    args: ["client.a:resource:action", "client.**:resource:action", false],
+    args: ["client.a:resource:action", "client.**:resource:action"],
     result: true
   },
   {
-    args: ["client.a.b:resource:action", "client.**:resource:action", false],
+    args: ["client.a.b:resource:action", "client.**:resource:action"],
     result: true
   },
   {
-    args: ["client.**:resource:action", "client:resource:action", false],
+    args: ["client.**:resource:action", "client:resource:action"],
     result: false
   },
   {
-    args: ["client.**:resource:action", "client:resource.a:action", false],
+    args: ["client.**:resource:action", "client:resource.a:action"],
     result: false
   },
   {
-    args: ["client:resource:action", "client.**:resource:action", false],
+    args: ["client:resource:action", "client.**:resource:action"],
     result: false
   },
   {
-    args: ["client:resource:action", "client.**:resource.a:action", false],
+    args: ["client:resource:action", "client.**:resource.a:action"],
     result: false
   },
   {
-    args: ["client.**:resource:action", "client.a:wrongresource:action", false],
+    args: ["client.**:resource:action", "client.a:wrongresource:action"],
     result: false
   },
   {
-    args: ["client.**:resource:action", "client.a:resource:wrongaction", false],
+    args: ["client.**:resource:action", "client.a:resource:wrongaction"],
     result: false
   },
   {
     args: [
       ["client.b:resource:action", "client.c:resource:action"],
-      "client.a:resource:action",
-      false
+      "client.a:resource:action"
     ],
     result: false
   },
   {
     args: [
       ["client.b:resource:action", "client.*:resource:action"],
-      "client.a:resource:action",
-      false
+      "client.a:resource:action"
     ],
     result: true
   },
   {
     args: [
       ["client.b:resource:action", "client.a:resource:action"],
-      "client.*:resource:action",
-      false
+      "client.*:resource:action"
     ],
     result: true
   },
   {
     args: [
       ["client.*:resource:action", "client.b:resource:action"],
-      "client.a:resource:action",
-      false
+      "client.a:resource:action"
     ],
     result: true
   }
 ] as {
-  args: [string, string, false] | [string[], string, false];
+  args: [string, string] | [string[], string];
   result: boolean;
 }[]).forEach(({ args, result }) => {
-  t(`test (loose) ${args[0]} ${args[1]} => ${result}`, t =>
-    t.is(test(args[0], args[1], args[2]), result)
+  t(`hasIntersection ${args[0]} ${args[1]} => ${result}`, t =>
+    t.is(hasIntersection(args[0], args[1]), result)
   );
 });
 
@@ -342,9 +345,12 @@ import { validate, normalize, test, limit, simplify } from ".";
   { args: [["x:**:c"], ["a:b:c"]], result: [] },
   { args: [["**:b:c", "a:**:c"], ["a:b:c", "x:y:c"]], result: ["a:b:c"] }
 ] as { args: [string[], string[]]; result: string[] }[]).forEach(row => {
-  t("limit - (" + row.args.join(") ∩ (") + ") => " + row.result, t => {
-    t.deepEqual(limit(...row.args).sort(), row.result);
-  });
+  t(
+    "getIntersection - (" + row.args.join(") ∩ (") + ") => " + row.result,
+    t => {
+      t.deepEqual(getIntersection(...row.args).sort(), row.result);
+    }
+  );
 });
 
 ([

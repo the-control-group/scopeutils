@@ -1,10 +1,5 @@
-import {
-  Pattern,
-  AnyMultiple,
-  AnySingle,
-  getIntersection,
-  isSuperset
-} from "./pattern";
+import { Pattern, AnySingle, AnyMultiple } from "./pattern";
+import * as pattern from "./pattern";
 
 export class InvalidScopeError extends Error {}
 
@@ -56,10 +51,11 @@ function intersect(
   const [b, ...restB] = rightB;
 
   if (!restA.length) {
-    return getIntersection(a, b).map(pattern => [...left, pattern]);
+    return pattern.getIntersection(a, b).map(pattern => [...left, pattern]);
   }
 
-  return getIntersection(a, b)
+  return pattern
+    .getIntersection(a, b)
     .map(pattern => intersect([...left, pattern], restA, restB))
     .reduce((x, y) => x.concat(y), []);
 }
@@ -97,58 +93,33 @@ export function normalize(scope: string): string {
     .join(":");
 }
 
-// according to the supplied rule, can the given subject be performed?
-export function test(
-  rule: string | string[],
-  subject: string,
-  strict: boolean = true
-): boolean {
-  if (!validate(subject)) {
-    throw new InvalidScopeError("The `subject` scope is invalid.");
-  }
-
-  if (Array.isArray(rule)) {
-    return rule.some(r => test(r, subject, strict));
-  }
-
-  if (!validate(rule)) {
-    throw new InvalidScopeError("A `rule` scope is invalid.");
-  }
-
-  const a = parse(rule);
-  const b = parse(subject);
-
-  // In strict mode, ensure that the subject is a subset or equal to at least
-  // one of the rule scopes.
-  if (strict) {
-    return (
-      a.length === b.length &&
-      a.every((patternA: Pattern, i: number) => isSuperset(patternA, b[i]))
-    );
-  }
-
-  // In weak mode, ensure that the subject and at least one of the rule scopes
-  // have an intersection.
-  return (
-    a.length === b.length &&
-    a.every(
-      (patternA: Pattern, i: number) =>
-        getIntersection(patternA, b[i]).length > 0
-    )
-  );
-}
-
 function s(winners: string[], candidate: string): string[] {
-  if (test(winners, candidate)) return winners;
+  if (isSuperset(winners, candidate)) return winners;
   return winners.concat(normalize(candidate));
 }
 
 // returns a de-duplicated array of scope rules
 export function simplify(collection: string[]): string[] {
-  return collection.reduce(s, []).reduceRight(s, []);
+  return collection
+    .reduce(s, [])
+    .reduceRight(s, [])
+    .sort();
 }
 
-export function limit(collectionA: string[], collectionB: string[]): string[] {
+export function getIntersection(
+  scopeOrCollectionA: string[] | string,
+  scopeOrCollectionB: string[] | string
+): string[] {
+  const collectionA =
+    typeof scopeOrCollectionA === "string"
+      ? [scopeOrCollectionA]
+      : scopeOrCollectionA;
+
+  const collectionB =
+    typeof scopeOrCollectionB === "string"
+      ? [scopeOrCollectionB]
+      : scopeOrCollectionB;
+
   if (!collectionA.every(validate)) {
     throw new InvalidScopeError(
       "One or more of the scopes in `collectionA` is invalid."
@@ -175,3 +146,118 @@ export function limit(collectionA: string[], collectionB: string[]): string[] {
       .map(stringify)
   );
 }
+
+export function hasIntersection(
+  scopeOrCollectionA: string[] | string,
+  scopeOrCollectionB: string[] | string
+): boolean {
+  return getIntersection(scopeOrCollectionA, scopeOrCollectionB).length > 0;
+}
+
+export function isEqual(
+  scopeOrCollectionA: string[] | string,
+  scopeOrCollectionB: string[] | string
+): boolean {
+  const collectionA = simplify(
+    typeof scopeOrCollectionA === "string"
+      ? [scopeOrCollectionA]
+      : scopeOrCollectionA
+  );
+  const collectionB = simplify(
+    typeof scopeOrCollectionB === "string"
+      ? [scopeOrCollectionB]
+      : scopeOrCollectionB
+  );
+
+  return (
+    collectionA.length === collectionB.length &&
+    collectionA.every((a, i) => a === collectionB[i])
+  );
+}
+
+export function isSuperset(
+  scopeOrCollectionA: string[] | string,
+  scopeOrCollectionB: string[] | string
+): boolean {
+  if (Array.isArray(scopeOrCollectionA)) {
+    return simplify(scopeOrCollectionA).some(a =>
+      isSuperset(a, scopeOrCollectionB)
+    );
+  }
+
+  if (!validate(scopeOrCollectionA)) {
+    throw new InvalidScopeError("A scope in `scopeOrCollectionA` is invalid.");
+  }
+
+  if (Array.isArray(scopeOrCollectionB)) {
+    return simplify(scopeOrCollectionB).every(b =>
+      isSuperset(scopeOrCollectionA, b)
+    );
+  }
+
+  if (!validate(scopeOrCollectionB)) {
+    throw new InvalidScopeError("A scope in `scopeOrCollectionB` is invalid.");
+  }
+
+  const a = parse(scopeOrCollectionA);
+  const b = parse(scopeOrCollectionB);
+
+  return (
+    a.length === b.length &&
+    a.every((patternA: Pattern, i: number) =>
+      pattern.isSuperset(patternA, b[i])
+    )
+  );
+}
+
+export function isStrictSuperset(
+  scopeOrCollectionA: string[] | string,
+  scopeOrCollectionB: string[] | string
+): boolean {
+  return (
+    !isEqual(scopeOrCollectionA, scopeOrCollectionB) &&
+    isSuperset(scopeOrCollectionA, scopeOrCollectionB)
+  );
+}
+
+export function isSubset(
+  scopeOrCollectionA: string[],
+  scopeOrCollectionB: string[]
+): boolean {
+  return isSubset(scopeOrCollectionB, scopeOrCollectionA);
+}
+
+export function isStrictSubset(
+  scopeOrCollectionA: string[],
+  scopeOrCollectionB: string[]
+): boolean {
+  return (
+    !isEqual(scopeOrCollectionA, scopeOrCollectionB) &&
+    isSubset(scopeOrCollectionA, scopeOrCollectionB)
+  );
+}
+
+// DEPRECATED
+// ----------
+// The following methods are deprecated:
+
+// according to the supplied rule, can the given subject be performed?
+export function test(
+  rule: string | string[],
+  subject: string,
+  strict: boolean = true
+): boolean {
+  // In strict mode, ensure that the subject is a subset or equal to at least
+  // one of the rule scopes.
+  if (strict) {
+    return isSuperset(rule, subject);
+  }
+
+  // In weak mode, ensure that the subject and at least one of the rule scopes
+  // have an intersection.
+  return getIntersection(rule, subject).length > 0;
+}
+
+export const can = test;
+
+export const limit = getIntersection;
