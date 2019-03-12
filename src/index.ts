@@ -47,6 +47,7 @@ function intersect(
   // INVARIENT: rightA.length === rightB.length
   // INVARIENT: rightA.length > 0
   // INVARIENT: rightB.length > 0
+
   const [a, ...restA] = rightA;
   const [b, ...restB] = rightB;
 
@@ -237,27 +238,28 @@ export function isStrictSubset(
   );
 }
 
-// DEPRECATED
-// ----------
-// The following methods are deprecated:
-
-// according to the supplied rule, can the given subject be performed?
+/**
+ * @deprecated Since version 2.1. Will be deleted in version 3.0. Replace
+ * "strict" calls with {@link isSuperset}, and weak mode with
+ * {@link hasIntersection}.
+ */
 export function test(
   rule: string | string[],
   subject: string,
   strict: boolean = true
 ): boolean {
-  // In strict mode, ensure that the subject is a subset or equal to at least
-  // one of the rule scopes.
-  if (strict) {
-    return isSuperset(rule, subject);
-  }
-
-  // In weak mode, ensure that the subject and at least one of the rule scopes
-  // have an intersection.
-  return getIntersection(rule, subject).length > 0;
+  return strict ? isSuperset(rule, subject) : hasIntersection(rule, subject);
 }
 
+/**
+ * @deprecated Since version 2.1. Will be deleted in version 3.0. Replace
+ * "strict" calls with {@link isSuperset}, and weak mode with
+ * {@link hasIntersection}.
+ */
 export const can = test;
 
+/**
+ * @deprecated Since version 2.1. Will be deleted in version 3.0. Renamed to
+ * {@link getIntersection}.
+ */
 export const limit = getIntersection;
