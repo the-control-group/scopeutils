@@ -222,15 +222,15 @@ export function isStrictSuperset(
 }
 
 export function isSubset(
-  scopeOrCollectionA: string[],
-  scopeOrCollectionB: string[]
+  scopeOrCollectionA: string[] | string,
+  scopeOrCollectionB: string[] | string
 ): boolean {
   return isSubset(scopeOrCollectionB, scopeOrCollectionA);
 }
 
 export function isStrictSubset(
-  scopeOrCollectionA: string[],
-  scopeOrCollectionB: string[]
+  scopeOrCollectionA: string[] | string,
+  scopeOrCollectionB: string[] | string
 ): boolean {
   return (
     !isEqual(scopeOrCollectionA, scopeOrCollectionB) &&
