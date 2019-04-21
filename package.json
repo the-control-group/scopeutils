@@ -17,11 +17,11 @@
     "pattern"
   ],
   "files": [
-    "lib",
-    "!lib/test.*"
+    "dist",
+    "!dist/test.*"
   ],
-  "main": "lib",
-  "types": "./lib/index.d.ts",
+  "main": "dist",
+  "types": "./dist/index.d.ts",
   "engines": {
     "node": ">=8.5"
   },
@@ -37,11 +37,11 @@
     "typescript": "^3.3.3333"
   },
   "scripts": {
-    "prepare": "rm -rf lib && npx tsc",
-    "test": "npm run prepare && npx ava --verbose lib/*.test.js",
+    "prepare": "rm -rf dist && npx tsc",
+    "test": "npm run prepare && npx ava --verbose dist/*.test.js",
     "lint": "prettier -c '**/*.{json,yml,md,ts}' && eslint src --ext ts",
     "format": "prettier --list-different --write '**/*.{json,yml,md,ts}'",
-    "watch": "rm -rf lib && npx tsc --watch"
+    "watch": "rm -rf dist && npx tsc --watch"
   },
   "dependencies": {}
 }
