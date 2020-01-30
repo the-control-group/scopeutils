@@ -1,0 +1,1 @@
+The contents of this repo have been moved to https://github.com/the-control-group/authx/tree/master/packages/scopes
